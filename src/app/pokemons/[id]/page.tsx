@@ -4,13 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation";
 import { Undo2 } from "lucide-react";
-import { 
-    fetchPokemonByNameId, 
-    getCachePokemon, 
-    iCanFetchPokemon, 
-    Pokemon, 
-    PokemonStats, 
-    setCachePokemon
+import {
+    fetchPokemonByNameId,
+    Pokemon,
+    PokemonStats,
 } from "../../../utils/endpoint";
 import {
     pokemonPageLayout,
@@ -33,24 +30,9 @@ export default function Home() {
     const pokemonName = pokemon?.name
 
     useEffect(() => {
-        const cachePokemon = getCachePokemon()
-        const checkCache = iCanFetchPokemon(Number(id))
-        if(!checkCache){
-            fetchPokemonByNameId(id).then((pokemonByName) => {
-                setPokemon(pokemonByName);
-                setCachePokemon({
-                    name: pokemonByName.name,
-                    sprites: pokemonByName.sprites,
-                    stats: pokemonByName.stats,
-                    id: pokemonByName.id
-                })
-                console.log(pokemon, "pokemon infos")
-            });
-        }
-        else{
-            const pokemons1 = cachePokemon.find(pomenonPage => pomenonPage.id === Number(id)) 
-            setPokemon(pokemons1);
-        }
+        fetchPokemonByNameId(id).then((pokemonByName) => {
+            setPokemon(pokemonByName);
+        });
         setIsLoading(false);
 
     }, []);

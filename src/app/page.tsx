@@ -1,25 +1,21 @@
-"use client"
+"use client";
 
-import { 
-  fetchTypes, 
-  setCacheTypes, 
-  getCacheTypes 
-} from "../utils/endpoint"
-import { useEffect, useState } from "react"
-import { checkFetch } from "../utils/check-fetch"
-import { useRouter } from "next/navigation"
+import { fetchTypes } from "../utils/endpoint";
+import { useEffect, useState } from "react";
+import { checkFetch } from "../utils/check-fetch";
+import { useRouter } from "next/navigation";
 import {
   bgColor,
   loadingPageStyle,
   mainStyle,
   headerStyle,
-  whiteBox
-} from "../utils/styles"
+  whiteBox,
+} from "../utils/styles";
 
 type PokemonType = {
   name: string;
   url: string;
-}
+};
 
 export default function Home() {
   const [pokemonsTypes, setPokemonsTypes] = useState<PokemonType[]>([]);
@@ -27,19 +23,11 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const cacheTypesPage = getCacheTypes()
-    // console.log(cacheTypesPage, "cache types")
-    if(cacheTypesPage.length === 0){
-      fetchTypes().then((data) => {
-        setPokemonsTypes(data)
-        setCacheTypes(data)
-      });
-    }else {
-      setPokemonsTypes(cacheTypesPage)
-    }
+    fetchTypes().then((data) => {
+      setPokemonsTypes(data);
+    });
+
     setIsLoading(false);
-    // console.log(cacheTypesPage, "console fora do if")
-    console.log(pokemonsTypes, "pokemon Types")
   }, []);
 
   return (
@@ -50,18 +38,22 @@ export default function Home() {
         </div>
       )}
       <header className={headerStyle}>
-        <h1 className="text-4xl font-bold col-span-4 text-center">Welcome to the Pokédex</h1>
-        <h2 className="text-3xl font-bold col-span-4 text-center">choose the type of your pokemon: </h2>
+        <h1 className="text-4xl font-bold col-span-4 text-center">
+          Welcome to the Pokédex
+        </h1>
+        <h2 className="text-3xl font-bold col-span-4 text-center">
+          choose the type of your pokemon:{" "}
+        </h2>
       </header>
       <div className="bg-stone-300">
         <div className={whiteBox}>
           {pokemonsTypes.map((type) => (
-            <div key={type.name}
-              className="flex justify-center items-center">
-              <button className={`${bgColor[type.name]} w-20 rounded-4xl p-2 `}
+            <div key={type.name} className="flex justify-center items-center">
+              <button
+                className={`${bgColor[type.name]} w-20 rounded-4xl p-2 `}
                 onClick={() => {
                   router.push(`/types/${checkFetch(type.url)}/`),
-                    console.log(type.name)
+                    console.log(type.name);
                 }}
               >
                 {type.name}
@@ -71,5 +63,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }

@@ -31,8 +31,3 @@ export const pokemonButtonStyle = 'bg-gray-500 w-40 text-white rounded-4xl p-2 m
 export const loadingPageStyle = 'absolute z-5 w-full h-screen bg-white flex items-center justify-center'
 export const headerStyle = 'bg-red-400 w-full py-6 text-center'
 export const whiteBox = "bg-white rounded-2xl shadow-lg p-10 mt-35 grid grid-cols-4 gap-6 max-w-6xl mx-auto"
-//position: absolute;
-    // top: 20px;
-    // left: 25%;
-    // width: 75px;
-    // height: 75px;

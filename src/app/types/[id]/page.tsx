@@ -2,9 +2,13 @@
 
 import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react"
-import { fetchPokemonsByType } from "../../../utils/endpoint";
 import { checkFetch } from "../../../utils/check-fetch";
 import { Undo2 } from "lucide-react";
+import { fetchPokemonsByType, 
+  getCachePokemonsTypesPage, 
+  setCachePokemonTypesPage,
+  iCanFetch 
+} from "../../../utils/endpoint";
 import {
   pageLayout,
   pokemonButtonStyle,
@@ -33,7 +37,24 @@ export default function Home() {
   const id = params.id;
 
   useEffect(() => {
-    fetchPokemonsByType(id).then((dataPokemons) => setPokemons(dataPokemons));
+    //Fazer o teste do array e os caralho dentro do endpoint antes de fazer o fetch e ai sim chamar a função 
+    const cacheTypesPage = getCachePokemonsTypesPage()
+    const checkCache = iCanFetch()
+    if (!checkCache){
+      fetchPokemonsByType(id).then((dataPokemons) => {
+        setPokemons(dataPokemons) 
+        setCachePokemonTypesPage({
+          pokemons: dataPokemons,
+          url: window.location.href
+        }) 
+        console.log(dataPokemons, "pokemons, dentro do if, com fetch ")
+      })
+    }else {
+      const pokemons1 = cacheTypesPage.flatMap(page => page.pokemons) 
+      
+      setPokemons(pokemons1)
+      console.log(cacheTypesPage, "cacheTypesPage do else, com o cache")
+    }
     setIsLoading(false);
   }, []);
   
@@ -56,9 +77,9 @@ export default function Home() {
       </header>
       <div className={pageLayout}>
         {pokemons.map(({ pokemon }) => {
-          const id = checkFetch(pokemon.url);
+          const id = checkFetch(pokemon.url)//isso aqui precisa mudar, pois vai ser "iterado atraves do que vem depois da segunda consulta;
           return (
-            <div key={pokemon.name}
+            <div key={id}
               className="flex justify-center items-center">
               <button
                 className={pokemonButtonStyle}

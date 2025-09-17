@@ -1,17 +1,10 @@
 "use client"
 
-// arrumar o css/Tailwind das páginas
-// criar uma div "quadro"para ajeitar os botões dos types, centralizar na tela (responsivo)
-// colocar o nome dos pokemons com a primeira letra maiúscula
-// arrumar o css/Tailwind do título
-// arrumar o css/Tailwind da página principal
-// Colocar o nome do tipo na página de pokemons
-// criar uma div "quadro" para ajeitar a lista dos botões dos pokemons, centralizar na tela (responsivo)
-
-
-
-
-import { fetchTypes,typesPage } from "../utils/endpoint"
+import { 
+  fetchTypes, 
+  setCacheTypes, 
+  getCacheTypes 
+} from "../utils/endpoint"
 import { useEffect, useState } from "react"
 import { checkFetch } from "../utils/check-fetch"
 import { useRouter } from "next/navigation"
@@ -34,8 +27,19 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-  fetchTypes().then((data) => setPokemonsTypes(data));
-  setIsLoading(false);
+    const cacheTypesPage = getCacheTypes()
+    // console.log(cacheTypesPage, "cache types")
+    if(cacheTypesPage.length === 0){
+      fetchTypes().then((data) => {
+        setPokemonsTypes(data)
+        setCacheTypes(data)
+      });
+    }else {
+      setPokemonsTypes(cacheTypesPage)
+    }
+    setIsLoading(false);
+    // console.log(cacheTypesPage, "console fora do if")
+    console.log(pokemonsTypes, "pokemon Types")
   }, []);
 
   return (

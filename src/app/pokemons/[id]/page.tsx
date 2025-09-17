@@ -3,8 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation";
-import { fetchPokemonByNameId } from "../../../utils/endpoint";
 import { Undo2 } from "lucide-react";
+import { 
+    fetchPokemonByNameId, 
+    getCachePokemon, 
+    iCanFetchPokemon, 
+    Pokemon, 
+    PokemonStats, 
+    setCachePokemon
+} from "../../../utils/endpoint";
 import {
     pokemonPageLayout,
     titleStyle,
@@ -16,24 +23,6 @@ import {
     headerStyle
 } from "../../../utils/styles"
 
-
-type PokemonStats = {
-    base_stat: number;
-    stat: {
-        name: string;
-    };
-
-};
-
-type Pokemon = {
-    name: string;
-    sprites: {
-        front_default: string;
-    };
-    stats: PokemonStats[];
-};
-
-
 export default function Home() {
     const [pokemon, setPokemon] = useState<Pokemon>();
     const [pokemonStats, setPokemonStats] = useState<PokemonStats[]>([]);
@@ -44,22 +33,39 @@ export default function Home() {
     const pokemonName = pokemon?.name
 
     useEffect(() => {
-        fetchPokemonByNameId(id).then((pokemonByName) => setPokemon(pokemonByName));
+        const cachePokemon = getCachePokemon()
+        const checkCache = iCanFetchPokemon(Number(id))
+        if(!checkCache){
+            fetchPokemonByNameId(id).then((pokemonByName) => {
+                setPokemon(pokemonByName);
+                setCachePokemon({
+                    name: pokemonByName.name,
+                    sprites: pokemonByName.sprites,
+                    stats: pokemonByName.stats,
+                    id: pokemonByName.id
+                })
+                console.log(pokemon, "pokemon infos")
+            });
+        }
+        else{
+            const pokemons1 = cachePokemon.find(pomenonPage => pomenonPage.id === Number(id)) 
+            setPokemon(pokemons1);
+        }
         setIsLoading(false);
+
     }, []);
 
     useEffect(() => {
-        if(pokemon){
+        if (pokemon) {
             setPokemonStats(pokemon.stats)
+            console.log(pokemon, "pokemon infos")
         }
     }, [pokemon]);
 
-    console.log(pokemon, "pokemon")
-    console.log(pokemonStats, "teste depois do fetch")
 
     return (
         <main className={mainStyle}
-        > {/* formatar a página direito */}
+        >
             {isLoading && (
                 <div className={loadingPageStyle}>
                     <img src="/loading.gif" alt="Loading..." />
@@ -67,7 +73,7 @@ export default function Home() {
             )}
             <title>{pokemon?.name}</title>
             <header
-            className={headerStyle}>
+                className={headerStyle}>
                 <button
                     className={returnHomeButtonStyle}
                     onClick={() => router.push(`/`)}
@@ -80,7 +86,6 @@ export default function Home() {
                 <h1 className={titleStyle}
                 >{pokemonName}</h1>
             </header>
-            {/* <div className={whiteBox}></div> */}
             <div className={pokemonPageLayout}>
                 <div className={imgStyle}>
                     {pokemon && pokemon.sprites && pokemon.sprites.front_default && (
@@ -89,13 +94,13 @@ export default function Home() {
                 </div>
                 <div>
                     <h1 className="font-bold">Base stats:</h1>
-                {pokemonStats.map((i) => (
-                    <p key={i.stat.name}>
-                        {i.stat.name}: {i.base_stat}
-                    </p>
-                ))}
+                    {pokemonStats.map((i) => (
+                        <p key={i.stat.name}>
+                            {i.stat.name}: {i.base_stat}
+                        </p>
+                    ))}
+                </div>
             </div>
-            </div>{/* colocar mais informações do pokemon, tipo, habilidades, peso, altura... */}
         </main>
     )
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { PokemonType } from "../utils/endpoint";
+import { fetchTypes, PokemonType } from "../utils/endpoint";
 import { useEffect, useState } from "react";
 import { checkFetch } from "../utils/check-fetch";
 import { useRouter } from "next/navigation";
@@ -50,7 +50,7 @@ export default function Home() {
               <button
                 className={`${bgColor[type.name]} w-20 rounded-4xl p-2 `}
                 onClick={() => {
-                  router.push(`/types/${checkFetch(type.url)}/`),          
+                  router.push(`/types/${checkFetch(type.url)}/`);
                 }}
               >
                 {type.name}

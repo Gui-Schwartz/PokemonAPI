@@ -4,7 +4,6 @@ import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { checkFetch } from "../../../utils/check-fetch";
 import { Undo2 } from "lucide-react";
-import { fetchPokemonsByType } from "../../../utils/endpoint";
 import {
   pageLayout,
   pokemonButtonStyle,
@@ -13,6 +12,7 @@ import {
   headerStyle,
   mainStyle,
 } from "../../../utils/styles";
+import { useCache } from "@/components/cache-provider";
 
 type PokemonType = {
   pokemon: {
@@ -22,6 +22,7 @@ type PokemonType = {
 };
 
 export default function Home() {
+  const { getPokemonsType } = useCache();
   const [pokemons, setPokemons] = useState<PokemonType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const params = useParams<{ id: string }>();
@@ -29,7 +30,8 @@ export default function Home() {
   const id = params.id;
 
   useEffect(() => {
-    fetchPokemonsByType(Number(id)).then((dataPokemons) => {
+    getPokemonsType(Number(id)).then((dataPokemons) => {
+      console.log(dataPokemons);
       setPokemons(dataPokemons);
     });
     setIsLoading(false);
@@ -65,7 +67,6 @@ export default function Home() {
                 <button
                   className={pokemonButtonStyle}
                   onClick={() => {
-                    console.log(pokemon.name);
                     router.push(`/pokemons/${id}`);
                   }}
                 >

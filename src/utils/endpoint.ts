@@ -8,6 +8,11 @@ export type PokemonType = {
     url: string;
 }
 
+export type PokemonByType = {
+    name: string
+    url: string
+}
+
 export type PokemonTypes = {
     id: number;
     pokemons: {
@@ -47,12 +52,20 @@ export const fetchTypes = async () => {
     return data.results;
 }
 
+interface PokemonByTypeResponse {
+    id: number
+    pokemon: {
+        pokemon: PokemonByType
+        slot: number
+    }[]
+}
+
 export const fetchPokemonsByType = async (id: number) => {
     const response = await fetch(type(id));
-    const dataPokemons = await response.json()
+    const dataPokemons:PokemonByTypeResponse = await response.json()
     const pokemonsByType = {
         id: id,
-        pokemons: dataPokemons.pokemon,
+        pokemons: dataPokemons.pokemon.map(x=>x.pokemon),
     }
     return pokemonsByType;
 }

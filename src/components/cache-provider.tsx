@@ -14,13 +14,20 @@ import {
   Pokemon,
   PokemonType,
   PokemonTypes,
+  PokemonByType,
 } from "../utils/endpoint";
 
 interface CacheContextValue {
   getTypes: () => Promise<PokemonType[]>;
-  getPokemonsType: (id: number) => Promise<PokemonTypes>;
+  getPokemonsType: (id: number) => Promise<PokemonByType[]>;
   getPokemon: (id: string) => Promise<Pokemon>;
 }
+
+type CustomCache = {
+  types: PokemonType[];
+  pokemonsByType: Record<number, PokemonByType[]>;
+  fullPokemon: Record<number, Pokemon>;
+};
 
 const CacheContext = createContext<CacheContextValue | undefined>(undefined);
 
@@ -28,45 +35,71 @@ interface CacheProviderProps {
   children: ReactNode;
 }
 
+const initalCache: CustomCache = {
+  types: [],
+  pokemonsByType: {},
+  fullPokemon: {},
+};
 export const CacheProvider = ({ children }: CacheProviderProps) => {
   const [cacheTypesPage, setCacheTypesPage] = useState<PokemonType[]>([]);
   const [cachePokemonsTypesPage, setCachePokemonsTypesPage] = useState<
     PokemonTypes[]
   >([]);
   const [cachePokemon, setCachePokemon] = useState<Pokemon[]>([]);
+  const [customCache, setCustomCache] = useState<CustomCache>(initalCache);
 
   const getTypes = useCallback(async () => {
-    if (cacheTypesPage.length !== 0) return cacheTypesPage;
+    if (customCache["types"].length !== 0) return customCache["types"];
     const types = await fetchTypes();
-    setCacheTypesPage(types);
+    setCustomCache((prev) => {
+      return {
+        ...prev,
+        types,
+      };
+    });
     return types;
-  }, [cacheTypesPage]);
+  }, [customCache]);
 
   const getPokemonsType = useCallback(
     async (id: number) => {
-      const cached = cachePokemonsTypesPage.find((page) => page.id === id);
-      console.log(cached, "cahed");
+      const cached = customCache["pokemonsByType"][id];
       if (cached) {
-        return cached.pokemons;
+        return cached;
       }
       const pokemonTypes = await fetchPokemonsByType(id);
-      setCachePokemonsTypesPage([...cachePokemonsTypesPage, pokemonTypes]);
+      setCustomCache((prev) => {
+        return {
+          ...prev,
+          pokemonsByType: {
+            ...prev.pokemonsByType,
+            [id]: pokemonTypes.pokemons,
+          },
+        };
+      });
       return pokemonTypes.pokemons;
     },
-    [cachePokemonsTypesPage]
+    [customCache]
   );
 
   const getPokemon = useCallback(
     async (id: string) => {
-      const cache = cachePokemon.find((pokemon) => pokemon.id === Number(id));
+      const cache = customCache["fullPokemon"][Number(id)];
       if (cache) {
         return cache;
       }
       const pokemon = await fetchPokemonByNameId(id);
-      setCachePokemon([...cachePokemon, pokemon]);
+      setCustomCache((prev) => {
+        return {
+          ...prev,
+          fullPokemon: {
+            ...prev.fullPokemon,
+            [id]: pokemon,
+          },
+        };
+      });
       return pokemon;
     },
-    [cachePokemon]
+    [customCache]
   );
 
   const value = useMemo(() => {
@@ -75,7 +108,7 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
       getPokemonsType,
       getPokemon,
     };
-  }, [cacheTypesPage, cachePokemonsTypesPage, cachePokemon]);
+  }, [customCache]);
 
   return (
     <CacheContext.Provider value={value}>{children}</CacheContext.Provider>
@@ -89,3 +122,16 @@ export const useCache = () => {
   }
   return context;
 };
+
+// ter um botão com ícone do lucide que mostra o cache, num quadrinho da IU
+
+// const cache = {
+//   types: [{}, {}, {}],
+//   pokemonsByType: {
+//     1: [{}, {}, {}],
+//     2: [{}, {}, {}],
+//   },
+//   fullPokemon: {
+//     1: {},
+//   },
+// };

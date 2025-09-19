@@ -13,17 +13,11 @@ import {
   mainStyle,
 } from "../../../utils/styles";
 import { useCache } from "@/components/cache-provider";
-
-type PokemonType = {
-  pokemon: {
-    name: string;
-    url: string;
-  };
-};
+import { PokemonByType } from "@/utils/endpoint";
 
 export default function Home() {
   const { getPokemonsType } = useCache();
-  const [pokemons, setPokemons] = useState<PokemonType[]>([]);
+  const [pokemons, setPokemons] = useState<PokemonByType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -31,7 +25,6 @@ export default function Home() {
 
   useEffect(() => {
     getPokemonsType(Number(id)).then((dataPokemons) => {
-      console.log(dataPokemons);
       setPokemons(dataPokemons);
     });
     setIsLoading(false);
@@ -60,7 +53,7 @@ export default function Home() {
           </h1>
         </header>
         <div className={pageLayout}>
-          {pokemons.map(({ pokemon }) => {
+          {pokemons.map((pokemon) => {
             const id = checkFetch(pokemon.url);
             return (
               <div key={id} className="flex justify-center items-center">

@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchTypes, PokemonType } from "../utils/endpoint";
+import { PokemonType } from "../utils/endpoint";
 import { useEffect, useState } from "react";
 import { checkFetch } from "../utils/check-fetch";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ import {
 import { useCache } from "@/components/cache-provider";
 
 export default function Home() {
-  const { getTypes } = useCache();
+  const { getTypes, showCacheMenu } = useCache();
 
   const [pokemonsTypes, setPokemonsTypes] = useState<PokemonType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +24,6 @@ export default function Home() {
     getTypes().then((data) => {
       setPokemonsTypes(data);
     });
-
     setIsLoading(false);
   }, []);
 
@@ -50,6 +49,7 @@ export default function Home() {
               <button
                 className={`${bgColor[type.name]} w-20 rounded-4xl p-2 `}
                 onClick={() => {
+                  console.log("teste");
                   router.push(`/types/${checkFetch(type.url)}/`);
                 }}
               >

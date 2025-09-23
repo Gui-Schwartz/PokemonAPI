@@ -21,6 +21,9 @@ interface CacheContextValue {
   getTypes: () => Promise<PokemonType[]>;
   getPokemonsType: (id: number) => Promise<PokemonByType[]>;
   getPokemon: (id: string) => Promise<Pokemon>;
+  showCacheMenu: () => any;
+  getAllCache: () => any;
+  showCache: () => any;
 }
 
 type CustomCache = {
@@ -41,12 +44,20 @@ const initalCache: CustomCache = {
   fullPokemon: {},
 };
 export const CacheProvider = ({ children }: CacheProviderProps) => {
-  const [cacheTypesPage, setCacheTypesPage] = useState<PokemonType[]>([]);
-  const [cachePokemonsTypesPage, setCachePokemonsTypesPage] = useState<
-    PokemonTypes[]
-  >([]);
-  const [cachePokemon, setCachePokemon] = useState<Pokemon[]>([]);
+  const [cacheMenu, setCacheMenu] = useState(false);
   const [customCache, setCustomCache] = useState<CustomCache>(initalCache);
+
+  const showCacheMenu = () => {
+    setCacheMenu((prev) => !prev);
+  };
+
+  const getAllCache = useCallback(() => {
+    return customCache;
+  }, [customCache]);
+
+  const showCache = useCallback(() => {
+    return cacheMenu;
+  }, [cacheMenu]);
 
   const getTypes = useCallback(async () => {
     if (customCache["types"].length !== 0) return customCache["types"];
@@ -107,8 +118,11 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
       getTypes,
       getPokemonsType,
       getPokemon,
+      showCacheMenu,
+      getAllCache,
+      showCache,
     };
-  }, [customCache]);
+  }, [customCache, cacheMenu]);
 
   return (
     <CacheContext.Provider value={value}>{children}</CacheContext.Provider>
@@ -122,16 +136,3 @@ export const useCache = () => {
   }
   return context;
 };
-
-// ter um botão com ícone do lucide que mostra o cache, num quadrinho da IU
-
-// const cache = {
-//   types: [{}, {}, {}],
-//   pokemonsByType: {
-//     1: [{}, {}, {}],
-//     2: [{}, {}, {}],
-//   },
-//   fullPokemon: {
-//     1: {},
-//   },
-// };

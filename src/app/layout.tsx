@@ -4,6 +4,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
 import { CacheProvider } from "@/components/cache-provider";
+import { cacheButtonStyle } from "@/utils/styles";
+import { FolderClock } from "lucide-react";
+import { CacheMenu } from "@/components/cache-menu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,7 +28,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CacheProvider>{children}</CacheProvider>
+        <CacheProvider>
+          {children}
+          <CacheMenu />
+        </CacheProvider>
       </body>
     </html>
   );

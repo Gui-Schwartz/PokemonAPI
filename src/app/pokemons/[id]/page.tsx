@@ -37,7 +37,6 @@ export default function Home() {
   useEffect(() => {
     if (pokemon) {
       setPokemonStats(pokemon.stats);
-      console.log(pokemon, "pokemon infos");
     }
   }, [pokemon]);
 

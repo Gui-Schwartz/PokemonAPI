@@ -41,6 +41,6 @@ export const whiteBox =
   "bg-white rounded-2xl shadow-lg p-10 mt-35 grid grid-cols-4 gap-6 max-w-6xl mx-auto";
 export const cacheButtonStyle = "absolute top-5 w-11 h-11 right-3";
 export const cacheModalStyle =
-  "absolute top-full right-0 mt-2 bg-white text-black rounded-lg shadow-lg p-4 w-125 max-h-80 overflow-y-auto z-50";
+  "absolute top-full right-0 mt-2 bg-white text-black rounded-lg shadow-lg p-6 w-125 max-h-80 overflow-y-auto z-50";
 export const modalStyle =
   "relative bg-white text-black rounded-xl shadow-lg p-6 z-50";

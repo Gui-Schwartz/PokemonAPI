@@ -14,7 +14,7 @@ import {
 import { useCache } from "@/components/cache-provider";
 
 export default function Home() {
-  const { getTypes, showCacheMenu } = useCache();
+  const { getTypes } = useCache();
 
   const [pokemonsTypes, setPokemonsTypes] = useState<PokemonType[]>([]);
   const [isLoading, setIsLoading] = useState(true);

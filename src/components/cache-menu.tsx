@@ -1,12 +1,10 @@
-import { cacheButtonStyle, cacheModalStyle, modalStyle } from "@/utils/styles";
-import { FolderClock } from "lucide-react";
+import { cacheModalStyle } from "@/utils/styles";
+import { FolderClock, X } from "lucide-react";
 import { useCache } from "./cache-provider";
 import { useCallback, useEffect, useRef } from "react";
-import { checkFetch } from "@/utils/check-fetch";
-
 
 export const CacheMenu = () => {
-  const { showCacheMenu, showCache, getAllCache } = useCache();
+  const { showCacheMenu, showCache, getAllCache, clearCacheTypes, clearCachePokemonTypes, clearCachePokemon } = useCache();
   const cacheMenu = showCache();
   const cache = getAllCache();
   const cacheMenuRef = useRef(null)
@@ -20,15 +18,13 @@ export const CacheMenu = () => {
 
   useEffect(() => {
     if (cacheMenu) {
-      document.addEventListener("mousedown", handleClickOutside); //sim, copiei da calculadora
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [handleClickOutside])
-  console.log(Object.entries(cache.pokemonsByType))
-  // padding total, ter o id informando de qual tipo é, padding para isso tb
 
 
   return (
@@ -41,8 +37,11 @@ export const CacheMenu = () => {
           {cacheMenu && (
             <div ref={cacheMenuRef}
               className={cacheModalStyle}>
-              <li className="font-bold">
+              <li className="font-bold flex items-center gap-2">
                 Types:
+                <button
+                  onClick={() => clearCacheTypes()}>
+                  <X size={19} /></button>
               </li>
               <ul>
                 {cache.types.map((type, i) => (
@@ -53,14 +52,20 @@ export const CacheMenu = () => {
                 Pokemons by types:
               </li>
               <ul>
-                {Object.values(cache.pokemonsByType).map((pokemons, id) =>
-                  <li key={id}>
-                    <strong>Id {id}:</strong>
+                {Object.entries(cache.pokemonsByType).map(([typeId, pokemons]) =>
+                  <li className="flex items-center gap-3 items-start mt-5"
+                    key={typeId}>
+                    <button
+                      onClick={() => {
+                        clearCachePokemonTypes(typeId)
+                      }}
+                    ><X size={19} /></button>
+                    <strong>Id {typeId}:</strong>
                     <ul className="ml-4 list-disc">
-                      {pokemons.map((pokemon) => (
-                        <ul key={checkFetch(pokemon.url)}>
+                      {pokemons.map((pokemon, Id) => (
+                        <p key={Id}>
                           {pokemon.name}
-                        </ul>
+                        </p>
                       ))}
                     </ul>
                   </li>
@@ -71,7 +76,12 @@ export const CacheMenu = () => {
               </li>
               <ul>
                 {Object.entries(cache.fullPokemon).map(([id, pokemon]) => (
-                  <li key={id}>
+                  <li className="flex items-center gap-2"
+                    key={id}>
+                    <button onClick={() => {
+                      clearCachePokemon(id)
+                    }}
+                    ><X size={19} /></button>
                     <strong>Id {id}: </strong> {pokemon.name}
                   </li>
                 ))}

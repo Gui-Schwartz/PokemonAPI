@@ -13,7 +13,6 @@ import {
   fetchTypes,
   Pokemon,
   PokemonType,
-  PokemonTypes,
   PokemonByType,
 } from "../utils/endpoint";
 
@@ -24,6 +23,9 @@ interface CacheContextValue {
   showCacheMenu: () => any;
   getAllCache: () => any;
   showCache: () => any;
+  clearCacheTypes: () => void;
+  clearCachePokemonTypes: (id: number) => void;
+  clearCachePokemon: (id: number) => void;
 }
 
 type CustomCache = {
@@ -113,6 +115,38 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
     [customCache]
   );
 
+  const clearCacheTypes = () => {
+    const types: any = []
+    setCustomCache((prev) => {
+      return {
+        ...prev,
+        types,
+      };
+    });
+  }
+
+  const clearCachePokemon = (id: string) => {
+    setCustomCache((prev) => {
+      const newFullPokemon = { ...prev.fullPokemon }
+      delete newFullPokemon[id]
+      return {
+        ...prev,
+        fullPokemon: newFullPokemon
+      };
+    });
+  }
+
+  const clearCachePokemonTypes = (id: number) => {
+    setCustomCache((prev) => {
+      const newPokemonTypes = { ...prev.pokemonsByType }
+      delete newPokemonTypes[id]
+      return {
+        ...prev,
+        pokemonsByType: newPokemonTypes
+      };
+    });
+  }
+
   const value = useMemo(() => {
     return {
       getTypes,
@@ -121,6 +155,9 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
       showCacheMenu,
       getAllCache,
       showCache,
+      clearCacheTypes,
+      clearCachePokemonTypes,
+      clearCachePokemon
     };
   }, [customCache, cacheMenu]);
 

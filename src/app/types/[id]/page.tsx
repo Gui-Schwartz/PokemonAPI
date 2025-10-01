@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { checkFetch } from "../../../utils/check-fetch";
 import { Undo2 } from "lucide-react";
 import {
@@ -13,20 +13,23 @@ import {
   mainStyle,
 } from "../../../utils/styles";
 import { useCache } from "@/components/cache-provider";
-import { PokemonByType } from "@/utils/endpoint";
 
 export default function Home() {
-  const { getPokemonsType } = useCache();
-  const [pokemons, setPokemons] = useState<PokemonByType[]>([]);
+  const { getPokemonsType, getAllCache } = useCache();
   const [isLoading, setIsLoading] = useState(true);
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const id = params.id;
+  const cache = getAllCache();
+
+  const pokemons = useMemo(() => {
+    return cache.pokemonsByType?.[Number(id)] || [];
+  }, [cache, id])
 
   useEffect(() => {
-    getPokemonsType(Number(id)).then((dataPokemons) => {
-      setPokemons(dataPokemons);
-    });
+    if (!cache.pokemonsByType?.[Number(id)]) {
+      getPokemonsType(Number(id))
+    }
     setIsLoading(false);
   }, []);
 

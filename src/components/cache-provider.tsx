@@ -6,7 +6,7 @@ import {
   useContext,
   useCallback,
 } from "react";
-
+import { omit } from "lodash";
 import {
   fetchPokemonByNameId,
   fetchPokemonsByType,
@@ -20,18 +20,21 @@ interface CacheContextValue {
   getTypes: () => Promise<PokemonType[]>;
   getPokemonsType: (id: number) => Promise<PokemonByType[]>;
   getPokemon: (id: string) => Promise<Pokemon>;
-  showCacheMenu: () => any;
-  getAllCache: () => any;
-  showCache: () => any;
-  clearCacheTypes: () => void;
-  clearCachePokemonTypes: (id: number) => void;
-  clearCachePokemon: (id: number) => void;
+  showCacheMenu: () => void;
+  getAllCache: () => CustomCache;
+  showCache: () => boolean;
+  clearCache: (path: string | string[]) => void
+  editCacheType: (index: number, newName: string) => void
+  editCachePokemonByType: (typeId: number, pokemonIndex: number, newName: string) => void
+  editCachePokemon: (pokemonIndex: number, newName: string) => void
+  editCachePokemonStats: ( pokemonId: string, statName: string, newBaseStat: number) => void
 }
 
+
 type CustomCache = {
-  types: PokemonType[];
-  pokemonsByType: Record<number, PokemonByType[]>;
-  fullPokemon: Record<number, Pokemon>;
+  types?: PokemonType[];
+  pokemonsByType?: Record<number, PokemonByType[]>;
+  fullPokemon?: Record<number, Pokemon>;
 };
 
 const CacheContext = createContext<CacheContextValue | undefined>(undefined);
@@ -45,6 +48,7 @@ const initalCache: CustomCache = {
   pokemonsByType: {},
   fullPokemon: {},
 };
+
 export const CacheProvider = ({ children }: CacheProviderProps) => {
   const [cacheMenu, setCacheMenu] = useState(false);
   const [customCache, setCustomCache] = useState<CustomCache>(initalCache);
@@ -62,7 +66,7 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
   }, [cacheMenu]);
 
   const getTypes = useCallback(async () => {
-    if (customCache["types"].length !== 0) return customCache["types"];
+    if (customCache["types"] && customCache["types"].length !== 0) return customCache["types"];
     const types = await fetchTypes();
     setCustomCache((prev) => {
       return {
@@ -75,7 +79,7 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
 
   const getPokemonsType = useCallback(
     async (id: number) => {
-      const cached = customCache["pokemonsByType"][id];
+      const cached = customCache.pokemonsByType?.[id]
       if (cached) {
         return cached;
       }
@@ -96,7 +100,7 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
 
   const getPokemon = useCallback(
     async (id: string) => {
-      const cache = customCache["fullPokemon"][Number(id)];
+      const cache = customCache.fullPokemon?.[Number(id)];
       if (cache) {
         return cache;
       }
@@ -115,37 +119,63 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
     [customCache]
   );
 
-  const clearCacheTypes = () => {
-    const types: any = []
-    setCustomCache((prev) => {
-      return {
-        ...prev,
-        types,
-      };
-    });
+  const clearCache = (path: string | string[]) => {
+    setCustomCache(prev => {
+      const newCache = omit(prev, path)
+      return newCache
+    })
+  }
+  const editCacheType = (index: number, newName: string) => {
+    setCustomCache(prev => ({
+      ...prev,
+      types: prev.types?.map((t, i) => i === index ? { ...t, name: newName } : t)
+    }))
   }
 
-  const clearCachePokemon = (id: string) => {
-    setCustomCache((prev) => {
-      const newFullPokemon = { ...prev.fullPokemon }
-      delete newFullPokemon[id]
+  const editCachePokemonByType = (typeId: number, pokemonIndex: number, newName: string) => {
+    setCustomCache(prev => ({
+      ...prev,
+      pokemonsByType: {
+        ...prev.pokemonsByType,
+        [typeId]: prev.pokemonsByType ? prev.pokemonsByType[typeId].map((p, i) => i === pokemonIndex ? { ...p, name: newName } : p) : []
+      }
+    }))
+  }
+  const editCachePokemon = (pokemonIndex: number, newName: string) => {
+    setCustomCache(prev => {
+      if(!prev.fullPokemon) return prev;
       return {
         ...prev,
-        fullPokemon: newFullPokemon
-      };
-    });
+        fullPokemon: {
+          ...prev.fullPokemon,
+          [pokemonIndex]: { ...prev.fullPokemon[pokemonIndex], name: newName }
+        }
+    }})
   }
 
-  const clearCachePokemonTypes = (id: number) => {
-    setCustomCache((prev) => {
-      const newPokemonTypes = { ...prev.pokemonsByType }
-      delete newPokemonTypes[id]
-      return {
-        ...prev,
-        pokemonsByType: newPokemonTypes
-      };
-    });
-  }
+  const editCachePokemonStats = ( pokemonId: string , statName: string, newBaseStat: number) => {
+  setCustomCache(prev => {
+    const key = Number(pokemonId)
+    
+    if (!prev.fullPokemon || !prev.fullPokemon[key]) return prev
+    const targetPokemon = prev.fullPokemon[key]
+
+    return {
+      ...prev,
+      fullPokemon: {
+        ...prev.fullPokemon,
+        [key]: {
+          ...targetPokemon,
+          stats: targetPokemon.stats.map(s =>
+            s.stat.name === statName
+              ? { ...s, base_stat: newBaseStat }
+              : s
+          )
+        }
+      }
+    }
+  })
+}
 
   const value = useMemo(() => {
     return {
@@ -155,11 +185,13 @@ export const CacheProvider = ({ children }: CacheProviderProps) => {
       showCacheMenu,
       getAllCache,
       showCache,
-      clearCacheTypes,
-      clearCachePokemonTypes,
-      clearCachePokemon
+      clearCache,
+      editCacheType,
+      editCachePokemonByType,
+      editCachePokemon,
+      editCachePokemonStats,
     };
-  }, [customCache, cacheMenu]);
+  }, [getAllCache, showCache, getPokemon, getPokemonsType, getTypes, clearCache, editCacheType, editCachePokemonByType, editCachePokemon, editCachePokemonStats]);
 
   return (
     <CacheContext.Provider value={value}>{children}</CacheContext.Provider>

@@ -1,6 +1,5 @@
 "use client";
 
-import { PokemonType } from "../utils/endpoint";
 import { useEffect, useState } from "react";
 import { checkFetch } from "../utils/check-fetch";
 import { useRouter } from "next/navigation";
@@ -14,16 +13,14 @@ import {
 import { useCache } from "@/components/cache-provider";
 
 export default function Home() {
-  const { getTypes } = useCache();
+  const { getTypes, getAllCache } = useCache();
 
-  const [pokemonsTypes, setPokemonsTypes] = useState<PokemonType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const cache = getAllCache();
 
   useEffect(() => {
-    getTypes().then((data) => {
-      setPokemonsTypes(data);
-    });
+    getTypes()
     setIsLoading(false);
   }, []);
 
@@ -44,12 +41,11 @@ export default function Home() {
       </header>
       <div className="bg-stone-300">
         <div className={whiteBox}>
-          {pokemonsTypes.map((type) => (
+          {cache.types?.map((type) => (
             <div key={type.name} className="flex justify-center items-center">
               <button
                 className={`${bgColor[type.name]} w-20 rounded-4xl p-2 `}
                 onClick={() => {
-                  console.log("teste");
                   router.push(`/types/${checkFetch(type.url)}/`);
                 }}
               >

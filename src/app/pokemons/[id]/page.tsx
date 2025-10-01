@@ -1,10 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { Undo2 } from "lucide-react";
-import { Pokemon, PokemonStats } from "../../../utils/endpoint";
+import { Undo2, Pencil, Check } from "lucide-react";
 import {
   pokemonPageLayout,
   titleStyle,
@@ -18,27 +17,23 @@ import {
 import { useCache } from "@/components/cache-provider";
 
 export default function Home() {
-  const { getPokemon } = useCache();
-  const [pokemon, setPokemon] = useState<Pokemon>();
-  const [pokemonStats, setPokemonStats] = useState<PokemonStats[]>([]);
+  const { getPokemon, editCachePokemonStats, getAllCache } = useCache();
   const [isLoading, setIsLoading] = useState(true);
+  const [pokemonEditStats, setPokemonEditStats] = useState<string | null>(null)
+  const [inputPokemonStats, setInputPokemonStats] = useState("")
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params.id;
+  const cache = getAllCache();
+
+  const pokemon = useMemo(() => cache.fullPokemon?.[Number(id)], [cache, id])
+  const pokemonStats = pokemon?.stats || []
   const pokemonName = pokemon?.name;
 
   useEffect(() => {
-    getPokemon(id).then((pokemonByName) => {
-      setPokemon(pokemonByName);
-    });
+    getPokemon(id)
     setIsLoading(false);
   }, []);
-
-  useEffect(() => {
-    if (pokemon) {
-      setPokemonStats(pokemon.stats);
-    }
-  }, [pokemon]);
 
   return (
     <main className={mainStyle}>
@@ -47,7 +42,7 @@ export default function Home() {
           <img src="/loading.gif" alt="Loading..." />
         </div>
       )}
-      <title>{pokemon?.name}</title>
+      <title>{pokemonName}</title>
       <header className={headerStyle}>
         <button
           className={returnHomeButtonStyle}
@@ -65,17 +60,39 @@ export default function Home() {
       </header>
       <div className={pokemonPageLayout}>
         <div className={imgStyle}>
-          {pokemon && pokemon.sprites && pokemon.sprites.front_default && (
+          {pokemon?.sprites?.front_default && (
             <img src={pokemon.sprites.front_default} alt={pokemon.name} />
           )}
         </div>
         <div>
           <h1 className="font-bold">Base stats:</h1>
-          {pokemonStats.map((i) => (
-            <p key={i.stat.name}>
-              {i.stat.name}: {i.base_stat}
-            </p>
-          ))}
+          {pokemonStats.length > 0 ? (
+            pokemonStats.map((s) => (
+              <li key={s.stat.name} className="flex items-center gap-2">
+                {s.stat.name}: {s.base_stat}
+                <button onClick={() => setPokemonEditStats(s.stat.name)}>
+                  <Pencil size={15} />
+                </button>
+                {pokemonEditStats === s.stat.name && (
+                  <div>
+                    <input
+                      type="number"
+                      value={inputPokemonStats}
+                      onChange={(e) => setInputPokemonStats(e.target.value)}
+                    />
+                    <button
+                      onClick={() => {
+                        editCachePokemonStats(id, s.stat.name, Number(inputPokemonStats))
+                        setInputPokemonStats("")
+                        setPokemonEditStats(null)
+                      }}
+                    >
+                      <Check />
+                    </button>
+                  </div>
+                )}
+              </li>
+            ))) : null}
         </div>
       </div>
     </main>

@@ -1,13 +1,19 @@
 import { cacheModalStyle } from "@/utils/styles";
-import { FolderClock, X } from "lucide-react";
+import { FolderClock, X, Pencil, Check } from "lucide-react";
 import { useCache } from "./cache-provider";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const CacheMenu = () => {
-  const { showCacheMenu, showCache, getAllCache, clearCacheTypes, clearCachePokemonTypes, clearCachePokemon } = useCache();
+  const { showCacheMenu, showCache, getAllCache, clearCache, editCacheType, editCachePokemonByType, editCachePokemon } = useCache();
+  const [typeEdit, setTypeEdit] = useState<string | null>(null)
+  const [inputTypeValue, setInputTypeValue] = useState("")
+  const [PokemonByTypeEdid, setPokemonByTypeEdid] = useState<string | null>(null)
+  const [inputPokemonByTypeValue, setPokemonByInputTypeValue] = useState("")
+  const [pokemonEdit, setPokemonEdit] = useState<string | null>(null)
+  const [inputPokemon, setInputPokemon] = useState("")
   const cacheMenu = showCache();
   const cache = getAllCache();
-  const cacheMenuRef = useRef(null)
+  const cacheMenuRef = useRef<HTMLDivElement| null>(null)
 
   const handleClickOutside = useCallback((event: any) => {
     if (cacheMenuRef.current && !cacheMenuRef.current.contains(event.target)
@@ -40,49 +46,121 @@ export const CacheMenu = () => {
               <li className="font-bold flex items-center gap-2">
                 Types:
                 <button
-                  onClick={() => clearCacheTypes()}>
+                  onClick={() => clearCache('types')}>
                   <X size={19} /></button>
               </li>
               <ul>
-                {cache.types.map((type, i) => (
-                  <li key={i}>{type.name}</li>
+                {cache.types && cache.types.map((type, i) => (
+                  <li key={i}>{type.name}
+                    <button
+                      key={i}
+                      onClick={() => setTypeEdit(type.name)}
+                    > <Pencil size={15} /></button>
+                    {typeEdit === type.name ? (
+                      <div>
+                        <input
+                          name={type.name}
+                          type="text"
+                          value={inputTypeValue}
+                          onChange={(e) => setInputTypeValue(e.target.value)}
+                        >
+                        </input>
+                        <button
+                          onClick={() => {
+                            editCacheType(i, inputTypeValue)
+                            setInputTypeValue("")
+                            setTypeEdit(null)
+                          }}>
+                          <Check />
+                        </button>
+                      </div>)
+                      : undefined}
+                  </li>
                 ))}
               </ul>
               <li className="font-bold">
                 Pokemons by types:
               </li>
               <ul>
-                {Object.entries(cache.pokemonsByType).map(([typeId, pokemons]) =>
-                  <li className="flex items-center gap-3 items-start mt-5"
-                    key={typeId}>
-                    <button
-                      onClick={() => {
-                        clearCachePokemonTypes(typeId)
-                      }}
-                    ><X size={19} /></button>
-                    <strong>Id {typeId}:</strong>
-                    <ul className="ml-4 list-disc">
-                      {pokemons.map((pokemon, Id) => (
-                        <p key={Id}>
-                          {pokemon.name}
-                        </p>
-                      ))}
-                    </ul>
-                  </li>
-                )}
+                {cache.pokemonsByType &&
+                  Object.entries(cache.pokemonsByType).map(([typeId, pokemons]) => (
+                    <li className="flex items-start gap-3 mt-5" key={typeId}>
+                      <button
+                        onClick={() => clearCache(["pokemonsByType", typeId])}
+                      >
+                        <X size={19} />
+                      </button>
+                      <strong>Id {typeId}:</strong>
+                      <ul className="ml-4 list-disc">
+                        {pokemons.map((pokemon, Id) => (
+                          <li key={Id}>
+                            {pokemon.name}
+                            <button
+                              onClick={() => setPokemonByTypeEdid(pokemon.name)}
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            {PokemonByTypeEdid === pokemon.name ? (
+                              <div>
+                                <input
+                                  name={pokemon.name}
+                                  type="text"
+                                  value={inputPokemonByTypeValue}
+                                  onChange={(e) => setPokemonByInputTypeValue(e.target.value)}
+                                />
+                                <button
+                                  onClick={() => {
+                                    editCachePokemonByType(Number(typeId), Id, inputPokemonByTypeValue);
+                                    setPokemonByInputTypeValue("");
+                                    setPokemonByTypeEdid(null);
+                                  }}
+                                >
+                                  <Check />
+                                </button>
+                              </div>
+                            ) : null}
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
               </ul>
               <li className="font-bold">
                 Pokemons:
               </li>
               <ul>
-                {Object.entries(cache.fullPokemon).map(([id, pokemon]) => (
+                {cache.fullPokemon && Object.entries(cache.fullPokemon).map(([id, pokemon]) => (
                   <li className="flex items-center gap-2"
                     key={id}>
                     <button onClick={() => {
-                      clearCachePokemon(id)
+                      clearCache(["fullPokemon", id])
                     }}
                     ><X size={19} /></button>
                     <strong>Id {id}: </strong> {pokemon.name}
+                    <button
+                      onClick={() => setPokemonEdit(pokemon.name)}
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    {pokemonEdit === pokemon.name ? (
+                              <div>
+                                <input
+                                  name={pokemon.name}
+                                  type="text"
+                                  value={inputPokemon}
+                                  onChange={(e) => setInputPokemon(e.target.value)}
+                                />
+                                <button
+                                  onClick={() => {
+                                    editCachePokemon(Number(id), inputPokemon);
+                                    setInputPokemon("");
+                                    setPokemonEdit(null);
+                                  }}
+                                >
+                                  <Check />
+                                </button>
+                              </div>
+                            ) : null}
                   </li>
                 ))}
               </ul>

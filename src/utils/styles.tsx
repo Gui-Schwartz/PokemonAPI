@@ -1,4 +1,4 @@
-export const bgColor = {
+export const bgColor: Record<string, string> = {
   //jogar isso para um arquivo styles.ts
   normal: "bg-gray-400 text-white",
   fire: "bg-red-500 text-white",

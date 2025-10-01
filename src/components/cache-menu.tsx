@@ -4,7 +4,7 @@ import { useCache } from "./cache-provider";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export const CacheMenu = () => {
-  const { showCacheMenu, showCache, getAllCache, clearCache, editCacheType, editCachePokemonByType, editCachePokemon } = useCache();
+  const { editCache, showCacheMenu, showCache, getAllCache, clearCache} = useCache();
   const [typeEdit, setTypeEdit] = useState<string | null>(null)
   const [inputTypeValue, setInputTypeValue] = useState("")
   const [PokemonByTypeEdid, setPokemonByTypeEdid] = useState<string | null>(null)
@@ -67,7 +67,10 @@ export const CacheMenu = () => {
                         </input>
                         <button
                           onClick={() => {
-                            editCacheType(i, inputTypeValue)
+                            editCache(prev => ({
+                              ...prev,
+                              types: prev.types?.map((t, i) => i === i ? { ...t, name: inputTypeValue } : t)
+                            }))
                             setInputTypeValue("")
                             setTypeEdit(null)
                           }}>
@@ -86,7 +89,7 @@ export const CacheMenu = () => {
                   Object.entries(cache.pokemonsByType).map(([typeId, pokemons]) => (
                     <li className="flex items-start gap-3 mt-5" key={typeId}>
                       <button
-                        onClick={() => clearCache(["pokemonsByType", typeId])}
+                        onClick={() => clearCache(`pokemonsByType.${typeId}`)}
                       >
                         <X size={19} />
                       </button>
@@ -110,7 +113,13 @@ export const CacheMenu = () => {
                                 />
                                 <button
                                   onClick={() => {
-                                    editCachePokemonByType(Number(typeId), Id, inputPokemonByTypeValue);
+                                    editCache(prev=>({
+                                      ...prev,
+                                      pokemonsByType: {
+                                        ...prev.pokemonsByType,
+                                        [typeId]: prev.pokemonsByType ? prev.pokemonsByType[Number(typeId)].map((p, i) => i === Id ? { ...p, name: inputPokemonByTypeValue } : p) : []
+                                      }
+                                    }))
                                     setPokemonByInputTypeValue("");
                                     setPokemonByTypeEdid(null);
                                   }}
@@ -133,7 +142,8 @@ export const CacheMenu = () => {
                   <li className="flex items-center gap-2"
                     key={id}>
                     <button onClick={() => {
-                      clearCache(["fullPokemon", id])
+                      clearCache(`fullPokemon.${id}` )
+                      console.log(id, `id`)
                     }}
                     ><X size={19} /></button>
                     <strong>Id {id}: </strong> {pokemon.name}
@@ -152,7 +162,15 @@ export const CacheMenu = () => {
                                 />
                                 <button
                                   onClick={() => {
-                                    editCachePokemon(Number(id), inputPokemon);
+                                    editCache(prev=> {
+                                      if(!prev.fullPokemon) return prev;
+                                        return {
+                                          ...prev,
+                                          fullPokemon: {
+                                            ...prev.fullPokemon,
+                                            [Number(id)]: { ...prev.fullPokemon[Number(id)], name: inputPokemon }
+                                            }
+                                    }})
                                     setInputPokemon("");
                                     setPokemonEdit(null);
                                   }}

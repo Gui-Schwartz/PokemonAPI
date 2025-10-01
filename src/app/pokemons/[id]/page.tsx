@@ -17,7 +17,7 @@ import {
 import { useCache } from "@/components/cache-provider";
 
 export default function Home() {
-  const { getPokemon, editCachePokemonStats, getAllCache } = useCache();
+  const { getPokemon, getAllCache, editCache } = useCache();
   const [isLoading, setIsLoading] = useState(true);
   const [pokemonEditStats, setPokemonEditStats] = useState<string | null>(null)
   const [inputPokemonStats, setInputPokemonStats] = useState("")
@@ -82,7 +82,27 @@ export default function Home() {
                     />
                     <button
                       onClick={() => {
-                        editCachePokemonStats(id, s.stat.name, Number(inputPokemonStats))
+                        editCache(prev=>{
+                          const key = Number(id)
+      
+                          if (!prev.fullPokemon || !prev.fullPokemon[key]) return prev
+                          const targetPokemon = prev.fullPokemon[key]
+
+                          return {
+                            ...prev,
+                            fullPokemon: {
+                              ...prev.fullPokemon,
+                              [key]: {
+                                ...targetPokemon,
+                                stats: targetPokemon.stats.map(s =>
+                                  s.stat.name === s.stat.name
+                                  ? { ...s, base_stat: Number(inputPokemonStats) }
+                                  : s
+                                )
+                              }
+                            }
+                          }
+                        })
                         setInputPokemonStats("")
                         setPokemonEditStats(null)
                       }}

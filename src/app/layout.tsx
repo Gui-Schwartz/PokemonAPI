@@ -1,6 +1,12 @@
 "use client";
+import React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 
 import "./globals.css";
 import { CacheProvider } from "@/components/cache-provider";
@@ -21,17 +27,31 @@ const geistMono = Geist_Mono({
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode; // quando clicar no x tem que fazer refetch
 }>) {
+  const [queryClient] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            retry: false,
+            staleTime: Infinity,
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <CacheProvider>
-          {children}
-          <CacheMenu />
-        </CacheProvider>
+        <QueryClientProvider client={queryClient}>
+          <CacheProvider>
+            {children}
+            <CacheMenu />
+          </CacheProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
 import { checkFetch } from "../../../utils/check-fetch";
 import { Undo2 } from "lucide-react";
 import {
@@ -12,26 +11,21 @@ import {
   headerStyle,
   mainStyle,
 } from "../../../utils/styles";
-import { useCache } from "@/components/cache-provider";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPokemonsByType } from "@/utils/endpoint";
 
 export default function Home() {
-  const { getPokemonsType, getAllCache } = useCache();
-  const [isLoading, setIsLoading] = useState(true);
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const id = params.id;
-  const cache = getAllCache();
 
-  const pokemons = useMemo(() => {
-    return cache.pokemonsByType?.[Number(id)] || [];
-  }, [cache, id])
-
-  useEffect(() => {
-    if (!cache.pokemonsByType?.[Number(id)]) {
-      getPokemonsType(Number(id))
-    }
-    setIsLoading(false);
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ["pokemonByType", id],
+    queryFn: ({ queryKey }) => {
+      const [_key, id] = queryKey;
+      return fetchPokemonsByType(Number(id));
+    },
+  });
 
   return (
     <>
@@ -56,7 +50,7 @@ export default function Home() {
           </h1>
         </header>
         <div className={pageLayout}>
-          {pokemons.map((pokemon) => {
+          {data?.pokemons.map((pokemon) => {
             const id = checkFetch(pokemon.url);
             return (
               <div key={id} className="flex justify-center items-center">

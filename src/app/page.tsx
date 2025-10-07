@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { checkFetch } from "../utils/check-fetch";
 import { useRouter } from "next/navigation";
 import {
@@ -10,19 +9,17 @@ import {
   headerStyle,
   whiteBox,
 } from "../utils/styles";
-import { useCache } from "@/components/cache-provider";
+
+import { useQuery } from "@tanstack/react-query";
+import { fetchTypes } from "@/utils/endpoint";
 
 export default function Home() {
-  const { getTypes, getAllCache } = useCache();
-
-  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const cache = getAllCache();
 
-  useEffect(() => {
-    getTypes()
-    setIsLoading(false);
-  }, []);
+  const { data, isLoading } = useQuery({
+    queryFn: fetchTypes,
+    queryKey: ["types"],
+  });
 
   return (
     <main className={mainStyle}>
@@ -41,7 +38,7 @@ export default function Home() {
       </header>
       <div className="bg-stone-300">
         <div className={whiteBox}>
-          {cache.types?.map((type) => (
+          {data?.map((type:any) => (
             <div key={type.name} className="flex justify-center items-center">
               <button
                 className={`${bgColor[type.name]} w-20 rounded-4xl p-2 `}

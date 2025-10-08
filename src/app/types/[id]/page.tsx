@@ -13,6 +13,7 @@ import {
 } from "../../../utils/styles";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPokemonsByType } from "@/utils/endpoint";
+import { queryKeys } from "@/utils/queryKeys";
 
 export default function Home() {
   const params = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ export default function Home() {
   const id = params.id;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["pokemonByType", id],
+    queryKey: queryKeys.type(id),
     queryFn: ({ queryKey }) => {
       const [_key, id] = queryKey;
       return fetchPokemonsByType(Number(id));

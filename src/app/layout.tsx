@@ -1,17 +1,10 @@
 "use client";
-import React from "react";
 import type { Metadata } from "next";
+import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import "./globals.css";
-import { CacheProvider } from "@/components/cache-provider";
-import { cacheButtonStyle } from "@/utils/styles";
-import { FolderClock } from "lucide-react";
 import { CacheMenu } from "@/components/cache-menu";
 
 const geistSans = Geist({
@@ -27,7 +20,7 @@ const geistMono = Geist_Mono({
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode; // quando clicar no x tem que fazer refetch
+  children: React.ReactNode;
 }>) {
   const [queryClient] = React.useState(
     () =>
@@ -47,10 +40,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryClientProvider client={queryClient}>
-          <CacheProvider>
-            {children}
-            <CacheMenu />
-          </CacheProvider>
+          {children}
+          <CacheMenu />
         </QueryClientProvider>
       </body>
     </html>

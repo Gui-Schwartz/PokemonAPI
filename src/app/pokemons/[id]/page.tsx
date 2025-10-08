@@ -14,12 +14,12 @@ import {
   returnHomeButtonStyle,
   headerStyle,
 } from "../../../utils/styles";
-import { useCache } from "@/components/cache-provider";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchPokemonByNameId } from "@/utils/endpoint";
+import { queryKeys } from "@/utils/queryKeys";
 
 export default function Home() {
-  const { editCache } = useCache();
+  const queryClient = useQueryClient();
   const [pokemonEditStats, setPokemonEditStats] = useState<string | null>(null);
   const [inputPokemonStats, setInputPokemonStats] = useState("");
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function Home() {
   const id = params.id;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["pokemon", id],
+    queryKey: queryKeys.pokemon(id),
     queryFn: ({ queryKey }) => {
       const [_key, id] = queryKey;
       return fetchPokemonByNameId(id);
@@ -85,31 +85,22 @@ export default function Home() {
                       />
                       <button
                         onClick={() => {
-                          editCache((prev) => {
-                            const key = Number(id);
-
-                            if (!prev.fullPokemon || !prev.fullPokemon[key])
-                              return prev;
-                            const targetPokemon = prev.fullPokemon[key];
-
-                            return {
-                              ...prev,
-                              fullPokemon: {
-                                ...prev.fullPokemon,
-                                [key]: {
-                                  ...targetPokemon,
-                                  stats: targetPokemon.stats.map((s) =>
-                                    s.stat.name === s.stat.name
-                                      ? {
-                                          ...s,
-                                          base_stat: Number(inputPokemonStats),
-                                        }
-                                      : s
-                                  ),
-                                },
-                              },
-                            };
-                          });
+                          queryClient.setQueryData(
+                            queryKeys.pokemon(id),
+                            (prev) => {
+                              return {
+                                ...prev,
+                                stats: prev.stats.map((x) =>
+                                  s.stat.name === x.stat.name
+                                    ? {
+                                        ...x,
+                                        base_stat: Number(inputPokemonStats),
+                                      }
+                                    : x
+                                ),
+                              };
+                            }
+                          );
                           setInputPokemonStats("");
                           setPokemonEditStats(null);
                         }}

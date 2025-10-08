@@ -2,6 +2,7 @@ import { cacheModalStyle } from "@/utils/styles";
 import { FolderClock, X, Pencil, Check } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/utils/queryKeys";
 
 export const CacheMenu = () => {
   const queryClient = useQueryClient();
@@ -25,9 +26,9 @@ export const CacheMenu = () => {
   const typesQuery = allData.find((q) => q.queryKey[0] === "types");
 
   const pokemonsByTypeQuerie = allData.filter(
-    (q) => q.queryKey[0] === "pokemonByType"
+    (q) => q.queryKey[0] === "types" && q.queryKey.length > 1
   );
-  const pokemonQuerie = allData.filter((q) => q.queryKey[0] === "pokemon");
+  const pokemonQuerie = allData.filter((q) => q.queryKey[0] === "pokemons");
 
   const cacheMenuRef = useRef<HTMLDivElement | null>(null);
 
@@ -60,7 +61,6 @@ export const CacheMenu = () => {
           className="w-11 h-11"
           onClick={() => {
             setShowCacheMenus((prev) => !prev);
-            console.log("typesQuery", typesQuery);
           }}
         >
           <FolderClock />
@@ -72,7 +72,7 @@ export const CacheMenu = () => {
                 Types:
                 <button
                   onClick={() =>
-                    queryClient.invalidateQueries({ queryKey: ["types"] })
+                    queryClient.invalidateQueries({ queryKey: queryKeys.types })
                   }
                 >
                   <X size={19} />
@@ -100,12 +100,14 @@ export const CacheMenu = () => {
                         />
                         <button
                           onClick={() => {
-                            queryClient.setQueryData(["types"], (prev: any[]) =>
-                              prev?.map((t) =>
-                                t.name === type.name
-                                  ? { ...t, name: inputTypeValue }
-                                  : t
-                              )
+                            queryClient.setQueryData(
+                              queryKeys.types,
+                              (prev: any[]) =>
+                                prev?.map((t) =>
+                                  t.name === type.name
+                                    ? { ...t, name: inputTypeValue }
+                                    : t
+                                )
                             );
                             setInputTypeValue("");
                             setTypeEdit(null);
@@ -123,7 +125,7 @@ export const CacheMenu = () => {
                 <button
                   onClick={() =>
                     queryClient.invalidateQueries({
-                      queryKey: ["pokemonByType"],
+                      queryKey: queryKeys.types,
                     })
                   }
                 >
@@ -146,7 +148,7 @@ export const CacheMenu = () => {
                       <button
                         onClick={() =>
                           queryClient.invalidateQueries({
-                            queryKey: ["pokemonByType", String(typeId)],
+                            queryKey: queryKeys.type(String(typeId)),
                           })
                         }
                       >
@@ -176,7 +178,7 @@ export const CacheMenu = () => {
                                 <button
                                   onClick={() => {
                                     queryClient.setQueryData(
-                                      ["pokemonByType", String(typeId)],
+                                      queryKeys.type(String(typeId)),
                                       (prev: any) => {
                                         if (!prev) return prev;
                                         return {
@@ -211,7 +213,9 @@ export const CacheMenu = () => {
                 Pokemons:
                 <button
                   onClick={() =>
-                    queryClient.invalidateQueries({ queryKey: ["pokemon"] })
+                    queryClient.invalidateQueries({
+                      queryKey: [queryKeys.pokemonsPrefix],
+                    })
                   }
                 >
                   <X size={19} />
@@ -227,7 +231,7 @@ export const CacheMenu = () => {
                       <button
                         onClick={() => {
                           queryClient.invalidateQueries({
-                            queryKey: ["pokemon", String(entry.data.id)],
+                            queryKey: queryKeys.pokemon(entry.data.id),
                           });
                         }}
                       >
@@ -246,7 +250,7 @@ export const CacheMenu = () => {
                           <button
                             onClick={() => {
                               queryClient.setQueryData(
-                                ["pokemon", String(entry.data.id)],
+                                queryKeys.pokemon(String(entry.data.id)),
                                 (prev: any) =>
                                   prev ? { ...prev, name: inputPokemon } : prev
                               );

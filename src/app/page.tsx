@@ -12,13 +12,14 @@ import {
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchTypes } from "@/utils/endpoint";
+import { queryKeys } from "@/utils/queryKeys";
 
 export default function Home() {
   const router = useRouter();
 
   const { data, isLoading } = useQuery({
     queryFn: fetchTypes,
-    queryKey: ["types"],
+    queryKey: queryKeys.types,
   });
 
   return (
@@ -38,7 +39,7 @@ export default function Home() {
       </header>
       <div className="bg-stone-300">
         <div className={whiteBox}>
-          {data?.map((type:any) => (
+          {data?.map((type: any) => (
             <div key={type.name} className="flex justify-center items-center">
               <button
                 className={`${bgColor[type.name]} w-20 rounded-4xl p-2 `}
